@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Design system — Realty Focus Admin
+   Tokens live in tailwind.config.ts; this file turns them into the small set
+   of component classes the whole panel is built from.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --rf-header-h: 64px;
+  --rf-sidebar-w: 260px;
+  --rf-sidebar-w-collapsed: 76px;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  }
+
+  ::selection {
+    @apply bg-navy/15 text-ink;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-navy/40 ring-offset-2 ring-offset-white;
+  }
+
+  /* Quieter scrollbars so dense tables don't look noisy. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+  }
+  *::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-full border-[3px] border-solid border-transparent bg-slate-300 bg-clip-content;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 bg-clip-content;
+  }
+}
+
+@layer components {
+  /* --- Surfaces ---------------------------------------------------------- */
+  .card {
+    @apply rounded-card border border-slate-200/80 bg-white shadow-card;
+  }
+  .card-interactive {
+    @apply card transition duration-200 ease-smooth hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-card-hover;
+  }
+  .section-title {
+    @apply text-sm font-semibold text-slate-900;
+  }
+  .muted {
+    @apply text-sm text-slate-500;
+  }
+
+  /* --- Forms ------------------------------------------------------------- */
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900
+           shadow-[inset_0_1px_1px_rgb(15_23_33/0.03)] outline-none transition duration-200 ease-smooth
+           placeholder:text-slate-400
+           hover:border-slate-400
+           focus:border-navy-500 focus:ring-4 focus:ring-navy/10
+           disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500;
+  }
+  /* Selects need room for the chevron; textareas need auto height. */
+  .input-select {
+    @apply input cursor-pointer appearance-none bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.65rem center;
+    background-size: 1rem 1rem;
+  }
+  .input-area {
+    @apply input h-auto py-2.5 leading-relaxed;
+  }
+  .field-hint {
+    @apply mt-1.5 text-xs text-slate-400;
+  }
+  .field-error {
+    @apply mt-1.5 text-xs font-medium text-brand;
+  }
+
+  /* --- Buttons ----------------------------------------------------------- */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg
+           px-4 text-sm font-semibold leading-none transition duration-200 ease-smooth
+           h-10 active:scale-[0.98]
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-navy text-white shadow-card hover:bg-navy-700 hover:shadow-card-hover;
+  }
+  .btn-ghost {
+    @apply btn border border-slate-300 bg-white text-slate-700 shadow-card hover:border-slate-400 hover:bg-slate-50;
+  }
+  .btn-subtle {
+    @apply btn bg-slate-100 text-slate-700 hover:bg-slate-200;
+  }
+  .btn-danger {
+    @apply btn bg-brand text-white shadow-card hover:bg-brand-600;
+  }
+  .btn-quiet {
+    @apply btn bg-transparent px-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900;
+  }
+  .btn-sm {
+    @apply h-8 rounded-md px-3 text-[13px];
+  }
+  .btn-icon {
+    @apply h-9 w-9 rounded-lg px-0;
+  }
+
+  /* --- Badges ------------------------------------------------------------ */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-neutral {
+    @apply badge border-slate-200 bg-slate-100 text-slate-600;
+  }
+  .badge-success {
+    @apply badge border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
+  .badge-danger {
+    @apply badge border-brand-100 bg-brand-50 text-brand-600;
+  }
+  .badge-warning {
+    @apply badge border-amber-200 bg-amber-50 text-amber-700;
+  }
+  .badge-info {
+    @apply badge border-navy-200 bg-navy-50 text-navy-600;
+  }
+
+  /* --- Filter chips ------------------------------------------------------ */
+  .chip {
+    @apply inline-flex h-8 items-center rounded-full border border-slate-300 bg-white px-3.5 text-[13px]
+           font-medium text-slate-600 transition duration-200 ease-smooth hover:border-slate-400 hover:bg-slate-50;
+  }
+  .chip-active {
+    @apply chip border-navy bg-navy text-white hover:border-navy-700 hover:bg-navy-700;
+  }
+
+  /* --- Tables ------------------------------------------------------------ */
+  .table-wrap {
+    @apply card overflow-hidden;
+  }
+  .table-scroll {
+    @apply w-full overflow-x-auto;
+  }
+  .th {
+    @apply whitespace-nowrap bg-slate-50/80 px-4 py-3 text-left text-[11px] font-semibold uppercase
+           tracking-wider text-slate-500;
+  }
+  .td {
+    @apply border-t border-slate-100 px-4 py-3 align-middle text-sm text-slate-700;
+  }
+  .row {
+    @apply transition-colors duration-150 hover:bg-navy-50/60;
+  }
+
+  /* --- Skeletons --------------------------------------------------------- */
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-slate-200/70;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: rf-shimmer 1.6s infinite;
+  }
+
+  /* --- Misc -------------------------------------------------------------- */
+  .code-chip {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[12px] text-slate-600;
+  }
+  .divider {
+    @apply border-t border-slate-100;
+  }
+}
+
+@keyframes rf-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Accessibility: never let decoration get in the way. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

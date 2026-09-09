@@ -5,7 +5,9 @@ import SearchBox from '@/components/SearchBox';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
 import ProjectThumb from '@/components/ProjectThumb';
-import { IconBuilding, IconEdit, IconFilter, IconMapPin } from '@/components/icons';
+import { getSessionUser } from '@/lib/auth';
+import { can } from '@/lib/permissions';
+import { IconBuilding, IconEdit, IconFilter, IconMapPin, IconPlus } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,13 +28,12 @@ export default async function MicrositesPage({
   const { page: pageParam, q, type } = await searchParams;
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1);
 
-  const { items, total, totalPages } = await listMicrosites({
-    page,
-    limit: 20,
-    search: q,
-    projectType: type,
-  });
+  const [{ items, total, totalPages }, user] = await Promise.all([
+    listMicrosites({ page, limit: 20, search: q, projectType: type }),
+    getSessionUser(),
+  ]);
 
+  const canWrite = can(user?.role, 'content.write');
   const isFiltered = Boolean(q || type);
 
   return (
@@ -41,7 +42,22 @@ export default async function MicrositesPage({
         eyebrow="Catalogue"
         title="Projects"
         description="Microsites and their linked detail records."
-        actions={<SearchBox action="/microsites" defaultValue={q} keep={{ type }} placeholder="Name, location or city…" />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchBox
+              action="/microsites"
+              defaultValue={q}
+              keep={{ type }}
+              placeholder="Name, location or city…"
+            />
+            {canWrite && (
+              <Link href="/microsites/new" className="btn-primary shrink-0">
+                <IconPlus className="h-4 w-4" />
+                New project
+              </Link>
+            )}
+          </div>
+        }
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -75,10 +91,10 @@ export default async function MicrositesPage({
             description={
               isFiltered
                 ? 'Try a different search term, or clear the tag filter to see everything.'
-                : 'Projects imported into the microsite collection will appear here.'
+                : 'Add one and it goes live on the website straight away.'
             }
-            actionLabel={isFiltered ? 'Clear filters' : undefined}
-            actionHref={isFiltered ? '/microsites' : undefined}
+            actionLabel={isFiltered ? 'Clear filters' : canWrite ? 'Add the first project' : undefined}
+            actionHref={isFiltered ? '/microsites' : canWrite ? '/microsites/new' : undefined}
           />
         </div>
       ) : (

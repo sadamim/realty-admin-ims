@@ -1,9 +1,12 @@
-import { listBuilders } from '@/lib/admin-data';
+import Link from 'next/link';
+import { listBuilders } from '@/lib/builders';
+import { getSessionUser } from '@/lib/auth';
+import { can } from '@/lib/permissions';
 import Pagination from '@/components/Pagination';
 import SearchBox from '@/components/SearchBox';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
-import { IconHardHat } from '@/components/icons';
+import { IconEdit, IconHardHat, IconPlus } from '@/components/icons';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Builders — Realty Focus Admin' };
@@ -16,7 +19,11 @@ export default async function BuildersPage({
   const { page: pageParam, q } = await searchParams;
   const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1);
 
-  const { items, total, totalPages } = await listBuilders({ page, limit: 20, search: q });
+  const [{ items, total, totalPages }, user] = await Promise.all([
+    listBuilders({ page, limit: 20, search: q }),
+    getSessionUser(),
+  ]);
+  const canWrite = can(user?.role, 'content.write');
 
   // Scales the inline bar against the busiest builder on this page only.
   const peak = items.reduce((max, b) => Math.max(max, b.projectCount ?? 0), 0);
@@ -26,12 +33,18 @@ export default async function BuildersPage({
       <PageHeader
         eyebrow="Catalogue"
         title="Builders"
-        description={
-          <>
-            Project counts come from <code className="code-chip">microsite_detail.builder_id</code>.
-          </>
+        description="Developers shown on the website, and the projects linked to each."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchBox action="/builders" defaultValue={q} placeholder="Builder name…" />
+            {canWrite && (
+              <Link href="/builders/new" className="btn-primary shrink-0">
+                <IconPlus className="h-4 w-4" />
+                New builder
+              </Link>
+            )}
+          </div>
         }
-        actions={<SearchBox action="/builders" defaultValue={q} placeholder="Builder name…" />}
       />
 
       {items.length === 0 ? (
@@ -42,59 +55,94 @@ export default async function BuildersPage({
             description={
               q
                 ? 'Check the spelling, or clear the search to list every builder.'
-                : 'Builders imported into the builder collection will appear here.'
+                : 'Add a builder and projects will be able to link to it.'
             }
-            actionLabel={q ? 'Clear search' : undefined}
-            actionHref={q ? '/builders' : undefined}
+            actionLabel={q ? 'Clear search' : canWrite ? 'Add the first builder' : undefined}
+            actionHref={q ? '/builders' : canWrite ? '/builders/new' : undefined}
           />
         </div>
       ) : (
         <>
           <div className="table-wrap hidden md:block">
             <div className="table-scroll">
-              <table className="w-full min-w-[720px] border-collapse">
+              <table className="w-full min-w-[820px] border-collapse">
                 <thead>
                   <tr>
                     <th className="th">Builder</th>
-                    <th className="th">Legacy id</th>
-                    <th className="th">Address</th>
-                    <th className="th w-[220px] text-right">Projects</th>
+                    <th className="th">Established</th>
+                    <th className="th">Cities</th>
+                    <th className="th">Projects</th>
+                    <th className="th">Status</th>
+                    <th className="th w-px" />
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((b) => (
-                    <tr key={b._id} className="row">
+                  {items.map((builder) => (
+                    <tr key={builder._id} className="row">
                       <td className="td">
                         <div className="flex items-center gap-3">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-50 text-xs font-bold uppercase text-navy-400">
-                            {(b.name || '?').trim().charAt(0)}
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                            {builder.logoSrc ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={builder.logoSrc}
+                                alt=""
+                                className="h-full w-full object-contain"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <IconHardHat className="h-4 w-4 text-slate-300" />
+                            )}
                           </span>
-                          <span className="font-semibold capitalize text-slate-900">{b.name}</span>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold capitalize text-slate-900">
+                              {builder.name}
+                            </p>
+                            <p className="text-xs text-slate-400">#{builder.builder_id || '—'}</p>
+                          </div>
                         </div>
                       </td>
                       <td className="td">
-                        <code className="code-chip">#{b.builder_id}</code>
-                      </td>
-                      <td className="td max-w-[320px] truncate text-slate-600">
-                        {b.address || <span className="text-slate-300">—</span>}
+                        {builder.established || <span className="text-slate-300">—</span>}
                       </td>
                       <td className="td">
-                        <div className="flex items-center justify-end gap-3">
-                          <span
-                            aria-hidden="true"
-                            className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-slate-100 lg:block"
-                          >
+                        {builder.locations.length ? (
+                          <span className="truncate">{builder.locations.slice(0, 3).join(', ')}</span>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="td">
+                        <div className="flex items-center gap-2">
+                          <span className="w-8 tabular-nums text-slate-700">
+                            {builder.projectCount}
+                          </span>
+                          <span className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
                             <span
-                              className="block h-full rounded-full bg-navy-400"
+                              className="block h-full rounded-full bg-navy/70"
                               style={{
-                                width: `${peak > 0 ? Math.max(4, ((b.projectCount ?? 0) / peak) * 100) : 0}%`,
+                                width: peak ? `${Math.round((builder.projectCount / peak) * 100)}%` : '0%',
                               }}
                             />
                           </span>
-                          <span className="w-10 text-right font-semibold tabular-nums text-slate-900">
-                            {b.projectCount}
-                          </span>
                         </div>
+                      </td>
+                      <td className="td">
+                        {builder.active ? (
+                          <span className="badge-success">Live</span>
+                        ) : (
+                          <span className="badge-neutral">Hidden</span>
+                        )}
+                      </td>
+                      <td className="td text-right">
+                        <Link
+                          href={`/builders/${builder._id}`}
+                          className="btn-ghost btn-sm"
+                          aria-label={`Edit ${builder.name}`}
+                        >
+                          <IconEdit className="h-3.5 w-3.5" />
+                          Edit
+                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -104,18 +152,30 @@ export default async function BuildersPage({
           </div>
 
           <ul className="space-y-3 md:hidden">
-            {items.map((b) => (
-              <li key={b._id} className="card p-4">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-50 text-xs font-bold uppercase text-navy-400">
-                    {(b.name || '?').trim().charAt(0)}
+            {items.map((builder) => (
+              <li key={builder._id}>
+                <Link href={`/builders/${builder._id}`} className="card-interactive flex items-start gap-3 p-4">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    {builder.logoSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={builder.logoSrc} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    ) : (
+                      <IconHardHat className="h-4 w-4 text-slate-300" />
+                    )}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold capitalize text-slate-900">{b.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-slate-500">{b.address || 'No address'}</p>
+                    <p className="truncate text-sm font-semibold capitalize text-slate-900">
+                      {builder.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                      {builder.locations.slice(0, 3).join(', ') || 'No cities listed'}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <span className="badge-neutral">{builder.projectCount} projects</span>
+                      {!builder.active && <span className="badge-neutral">Hidden</span>}
+                    </div>
                   </div>
-                  <span className="badge-neutral shrink-0 tabular-nums">{b.projectCount} projects</span>
-                </div>
+                </Link>
               </li>
             ))}
           </ul>

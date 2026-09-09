@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import Spinner from '@/components/ui/Spinner';
-import { IconAlertTriangle, IconImage } from '@/components/icons';
+import ImageUploader from '@/components/ImageUploader';
+import { IconAlertTriangle } from '@/components/icons';
 
 interface Props {
   id: string;
@@ -181,41 +182,27 @@ export default function MicrositeForm({ id, microsite, details, builders, status
             <Field label="Longitude" name="longitude" defaultValue={d.longitude} disabled={!details} inputMode="decimal" />
           </div>
 
-          {/* Featured image: filename in, live preview out. */}
-          <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
-            <div>
-              <label className="label" htmlFor="featured_image">
-                Featured image
-              </label>
-              <input
-                id="featured_image"
-                name="featured_image"
-                value={featuredImage}
-                onChange={(event) => setFeaturedImage(event.target.value)}
-                disabled={!details}
-                className="input"
-                placeholder="filename.jpg"
-              />
-              <p className="field-hint">
-                Filename under <code className="code-chip">realtyfocus.info/images/fimage/</code>
-              </p>
-            </div>
-
-            <div className="flex h-[88px] w-[132px] items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
-              {featuredImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={`https://realtyfocus.info/images/fimage/${featuredImage}`}
-                  alt="Featured image preview"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="flex flex-col items-center gap-1 text-slate-400">
-                  <IconImage className="h-5 w-5" />
-                  <span className="text-[11px]">No image</span>
-                </span>
-              )}
-            </div>
+          {/* Featured image.
+              The value still travels in the same FormData field, through a
+              hidden input that carries the uploader's state — including its
+              `disabled` flag, so a project with no detail row submits exactly
+              what it submitted before: nothing. Legacy values are bare
+              filenames; the uploader resolves those against the old CDN for the
+              preview and leaves the stored value alone until it is replaced. */}
+          <div className="mt-4 max-w-md">
+            <ImageUploader
+              value={featuredImage || null}
+              onChange={(next) => {
+                setFeaturedImage(next ?? '');
+                setDirty(true);
+              }}
+              folder="project"
+              label="Featured image"
+              aspect="aspect-[4/3]"
+              disabled={!details}
+              hint="Shown on every project card and at the top of the project page."
+            />
+            <input type="hidden" name="featured_image" value={featuredImage} disabled={!details} />
           </div>
 
           <div className="mt-4">

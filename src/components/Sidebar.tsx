@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import NavLink from '@/components/NavLink';
 import SignOutButton from '@/components/SignOutButton';
-import { NAV_ITEMS } from '@/components/nav-items';
+import { visibleGroups } from '@/components/nav-items';
 import { IconClose, IconPanelLeft } from '@/components/icons';
 import type { SessionUser } from '@/lib/session';
 
@@ -70,17 +70,31 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-3" aria-label="Main">
-          <p
-            className={`px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
-          >
-            Manage
-          </p>
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.href} item={item} collapsed={collapsed} onNavigate={onCloseMobile} />
+        {/* Nav — groups and items are filtered by the signed-in role */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3" aria-label="Main">
+          {visibleGroups(user.role).map((group, index) => (
+            <div key={group.label} className={index > 0 ? 'mt-4' : ''}>
+              <p
+                className={`px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 ${
+                  collapsed ? 'lg:hidden' : ''
+                }`}
+              >
+                {group.label}
+              </p>
+              {collapsed && index > 0 && (
+                <div aria-hidden="true" className="mx-3 mb-2 hidden border-t border-slate-100 lg:block" />
+              )}
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    collapsed={collapsed}
+                    onNavigate={onCloseMobile}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 

@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------
 import { ObjectId } from 'mongodb';
 import { getDb, serialize } from '@/lib/mongodb';
+import { nextLegacyId } from '@/lib/legacy-id';
 
 export const escapeRegex = (value: string) =>
   String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -215,6 +216,41 @@ export async function getMicrosite(id: string) {
   });
 }
 
+export interface MicrositeOptions {
+  builders: Array<{ builder_id: string; name: string }>;
+  statuses: Array<{ status_id: string; status: string }>;
+  types: Array<{ type_id: string; type: string }>;
+}
+
+/**
+ * The three dropdowns every project form needs. getMicrosite() already returns
+ * these alongside one project; the create form has no project yet, so it reads
+ * them on their own.
+ */
+export async function micrositeOptions(): Promise<MicrositeOptions> {
+  const db = await getDb();
+  const [builders, statuses, types] = await Promise.all([
+    db.collection('builder').find({}, { projection: { builder_id: 1, name: 1 } }).sort({ name: 1 }).toArray(),
+    db.collection('prop_status').find({}).toArray(),
+    db.collection('prop_type').find({}).toArray(),
+  ]);
+
+  return {
+    builders: builders.map((doc) => ({
+      builder_id: String(doc.builder_id ?? ''),
+      name: String(doc.name ?? ''),
+    })),
+    statuses: statuses.map((doc) => ({
+      status_id: String(doc.status_id ?? ''),
+      status: String(doc.status ?? ''),
+    })),
+    types: types.map((doc) => ({
+      type_id: String(doc.type_id ?? ''),
+      type: String(doc.type ?? ''),
+    })),
+  };
+}
+
 /** Fields the edit form is allowed to write. Anything else is ignored. */
 const MICROSITE_FIELDS = [
   'name',
@@ -277,67 +313,60 @@ export async function updateMicrosite(id: string, payload: Record<string, unknow
   return { ok: true };
 }
 
-export interface BuilderRow {
-  _id: string;
-  builder_id: string;
-  name: string;
-  logo: string;
-  address: string;
-  projectCount: number;
-}
-
-export async function listBuilders(opts: { page?: number; limit?: number; search?: string }) {
+/**
+ * Create a project.
+ *
+ * A microsite is really TWO documents: the `microsite` row (name, location,
+ * tag) and the `microsite_detail` row that everything else hangs off. The edit
+ * form has always had to cope with projects that were imported without a detail
+ * row; a project created here gets both, so it never lands in that state.
+ *
+ * The link between them is the legacy string PK, so the new project takes the
+ * next number in the existing micro_id sequence rather than an ObjectId.
+ */
+export async function createMicrosite(payload: Record<string, unknown>) {
   const db = await getDb();
-  const page = Math.max(1, opts.page ?? 1);
-  const limit = Math.max(1, Math.min(100, opts.limit ?? 20));
 
-  const filter: Record<string, unknown> = {};
-  if (opts.search?.trim()) {
-    filter.name = new RegExp(escapeRegex(opts.search.trim()), 'i');
+  const name = String(payload.name ?? '').trim();
+  if (!name) throw new Error('A project name is required.');
+
+  const microId = await nextLegacyId(db, 'microsite', 'micro_id');
+
+  const micrositeDoc: Record<string, unknown> = {
+    micro_id: microId,
+    name,
+    project_type: 'none',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  for (const field of MICROSITE_FIELDS) {
+    if (field in payload) micrositeDoc[field] = payload[field];
+  }
+  micrositeDoc.name = name;
+
+  const detailDoc: Record<string, unknown> = {
+    micro_id: microId,
+    am_id: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  for (const field of DETAIL_FIELDS) {
+    if (field in payload) detailDoc[field] = payload[field];
   }
 
-  const total = await db.collection('builder').countDocuments(filter);
+  const result = await db.collection('microsite').insertOne(micrositeDoc);
 
-  const items = await db
-    .collection('builder')
-    .aggregate([
-      { $match: filter },
-      { $sort: { name: 1 } },
-      { $skip: (page - 1) * limit },
-      { $limit: limit },
-      {
-        $lookup: {
-          from: 'microsite_detail',
-          localField: 'builder_id',
-          foreignField: 'builder_id',
-          as: 'projects',
-        },
-      },
-      {
-        $project: {
-          builder_id: 1,
-          name: 1,
-          logo: 1,
-          address: 1,
-          projectCount: { $size: '$projects' },
-        },
-      },
-    ])
-    .toArray();
+  try {
+    await db.collection('microsite_detail').insertOne(detailDoc);
+  } catch (error) {
+    // Without its detail row the project would show up in the list with no
+    // builder, price or description and no way to add them. Roll back rather
+    // than leave that behind.
+    await db.collection('microsite').deleteOne({ _id: result.insertedId });
+    throw error;
+  }
 
-  return {
-    items: serialize(items) as BuilderRow[],
-    total,
-    page,
-    limit,
-    totalPages: Math.max(1, Math.ceil(total / limit)),
-  };
-}
-
-export async function listAmenities() {
-  const db = await getDb();
-  const rows = await db.collection('amenities').find({}).sort({ name: 1 }).toArray();
-  return serialize(rows);
+  return { ok: true, id: String(result.insertedId), micro_id: microId };
 }
 
 export async function listAdmins() {

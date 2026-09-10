@@ -27,6 +27,8 @@ export default function BannerEditor({
   const [ctaHref, setCtaHref] = useState(banner?.ctaHref ?? '');
   const [active, setActive] = useState(banner?.active ?? true);
   const [image, setImage] = useState<string | null>(banner?.image ?? null);
+  const [imageTablet, setImageTablet] = useState<string | null>(banner?.imageTablet ?? null);
+  const [imageMobile, setImageMobile] = useState<string | null>(banner?.imageMobile ?? null);
 
   const [busy, setBusy] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -45,7 +47,16 @@ export default function BannerEditor({
       const res = await fetch(isNew ? '/api/banners' : `/api/banners/${banner!._id}`, {
         method: isNew ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, subtitle, ctaLabel, ctaHref, active, image }),
+        body: JSON.stringify({
+          title,
+          subtitle,
+          ctaLabel,
+          ctaHref,
+          active,
+          image,
+          imageTablet,
+          imageMobile,
+        }),
       });
       const data = await res.json();
 
@@ -101,13 +112,44 @@ export default function BannerEditor({
                   setImageError(null);
                 }}
                 folder="banner"
-                label="Slide image"
+                label="Desktop image"
                 required
                 aspect="aspect-[21/9]"
                 disabled={!canWrite}
-                hint="Wide landscape works best — the hero crops to fill. Around 2000×900."
+                hint="Wide landscape — the hero crops to fill. Around 2000×900."
               />
               {imageError && <p className="field-error">{imageError}</p>}
+
+              {/* Optional narrower crops. A wide hero image loses its subject
+                  when a phone crops it to a tall sliver, which is the whole
+                  reason these exist — but they stay optional, and an empty slot
+                  simply reuses the desktop image. */}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <ImageUploader
+                  value={imageTablet}
+                  onChange={setImageTablet}
+                  folder="banner"
+                  label="Tablet image"
+                  aspect="aspect-[4/3]"
+                  disabled={!canWrite}
+                  hint="Used under 1024px wide. Optional."
+                />
+                <ImageUploader
+                  value={imageMobile}
+                  onChange={setImageMobile}
+                  folder="banner"
+                  label="Mobile image"
+                  aspect="aspect-[9/16]"
+                  disabled={!canWrite}
+                  hint="Used under 640px wide. Optional."
+                />
+              </div>
+
+              <p className="field-hint mt-2">
+                {imageTablet || imageMobile
+                  ? 'The website picks the narrowest matching image for the visitor\u2019s screen.'
+                  : 'Only the desktop image is set, so every screen gets that one.'}
+              </p>
             </div>
 
             <div className="divider pt-5">

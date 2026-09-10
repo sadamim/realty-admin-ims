@@ -6,7 +6,7 @@
 // nothing can be written into public/. Each app serves bytes from its own
 // /api/media/[id] route, so an image reference is stored as the relative path
 // "/api/media/<id>" and resolves correctly in whichever app renders it.
-import { ObjectId, type Filter, type Document } from 'mongodb';
+import { ObjectId, type Document } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { mediaUrl, MEDIA_FOLDERS, type MediaFolder } from '@/lib/image-url';
 
@@ -18,7 +18,6 @@ export {
   isUploadedMedia,
   LEGACY_IMAGE_BASE,
   MEDIA_FOLDERS,
-  MEDIA_FOLDER_LABELS,
   LEGACY_FOLDER_FOR,
 } from '@/lib/image-url';
 export type { MediaFolder } from '@/lib/image-url';
@@ -120,134 +119,9 @@ export async function getMediaBytes(id: string) {
   };
 }
 
-export async function listMedia(opts: {
-  page?: number;
-  limit?: number;
-  folder?: string;
-  search?: string;
-} = {}) {
-  const db = await getDb();
-  const page = Math.max(1, opts.page ?? 1);
-  const limit = Math.max(1, Math.min(100, opts.limit ?? 24));
-
-  const filter: Filter<Document> = {};
-  if (opts.folder && MEDIA_FOLDERS.includes(opts.folder as MediaFolder)) {
-    filter.folder = opts.folder;
-  }
-  if (opts.search?.trim()) {
-    const rx = new RegExp(opts.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    filter.$or = [{ filename: rx }, { alt: rx }];
-  }
-
-  const collection = db.collection(MEDIA_COLLECTION);
-  const total = await collection.countDocuments(filter);
-  const docs = await collection
-    .find(filter, { projection: { data: 0 } }) // never pull the bytes into a list
-    .sort({ createdAt: -1, _id: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .toArray();
-
-  return {
-    items: docs.map(toRecord),
-    total,
-    page,
-    limit,
-    totalPages: Math.max(1, Math.ceil(total / limit)),
-  };
-}
-
-export async function countMedia(): Promise<number> {
-  const db = await getDb();
-  return db.collection(MEDIA_COLLECTION).countDocuments().catch(() => 0);
-}
-
-// Every place an uploaded image can be referenced. Adding a section here is
-// all it takes for the media library to warn before deleting one of its images.
-const USAGE_SOURCES: Array<{
-  collection: string;
-  field: string;
-  label: string;
-  title: string;
-  fallback: string;
-}> = [
-  { collection: 'blog', field: 'image', label: 'Blog', title: 'title', fallback: 'untitled post' },
-  { collection: 'banner', field: 'image', label: 'Banner', title: 'title', fallback: 'untitled slide' },
-  { collection: 'builder', field: 'logo', label: 'Builder', title: 'name', fallback: 'unnamed builder' },
-  { collection: 'amenities', field: 'image', label: 'Amenity', title: 'name', fallback: 'unnamed amenity' },
-  { collection: 'testimonial', field: 'image', label: 'Testimonial', title: 'name', fallback: 'unnamed' },
-  { collection: 'team', field: 'image', label: 'Team', title: 'name', fallback: 'unnamed' },
-  {
-    collection: 'microsite_detail',
-    field: 'featured_image',
-    label: 'Project',
-    title: 'micro_id',
-    fallback: 'project',
-  },
-];
-
-const usageLabel = (
-  source: (typeof USAGE_SOURCES)[number],
-  doc: Document,
-) => {
-  const name = String(doc[source.title] ?? '').trim() || source.fallback;
-  return source.collection === 'microsite_detail'
-    ? `${source.label}: #${name}`
-    : `${source.label}: ${name}`;
-};
-
-/** Where an image is referenced, so the UI can warn before deleting. */
-export async function findMediaUsage(id: string): Promise<string[]> {
-  const db = await getDb();
-  const url = mediaUrl(id);
-
-  const results = await Promise.all(
-    USAGE_SOURCES.map(async (source) =>
-      db
-        .collection(source.collection)
-        .find({ [source.field]: url }, { projection: { [source.title]: 1 } })
-        .limit(10)
-        .toArray()
-        .then((docs) => docs.map((doc) => usageLabel(source, doc)))
-        .catch(() => [] as string[]),
-    ),
-  );
-
-  return results.flat();
-}
-
-/** Usage for a whole page of media in one query per source rather than 2N. */
-export async function findUsageForMany(urls: string[]): Promise<Record<string, string[]>> {
-  if (urls.length === 0) return {};
-  const db = await getDb();
-
-  const usage: Record<string, string[]> = {};
-
-  const batches = await Promise.all(
-    USAGE_SOURCES.map(async (source) =>
-      db
-        .collection(source.collection)
-        .find(
-          { [source.field]: { $in: urls } },
-          { projection: { [source.field]: 1, [source.title]: 1 } },
-        )
-        .toArray()
-        .then((docs) => ({ source, docs }))
-        .catch(() => ({ source, docs: [] as Document[] })),
-    ),
-  );
-
-  for (const { source, docs } of batches) {
-    for (const doc of docs) {
-      const url = String(doc[source.field] ?? '');
-      if (!url) continue;
-      (usage[url] ??= []).push(usageLabel(source, doc));
-    }
-  }
-
-  return usage;
-}
-
+// deleteMedia stays reachable through DELETE /api/media/[id]. The browsable
+// library screen that used to call it was removed; uploading, serving and
+// deleting by id all still work.
 export async function deleteMedia(id: string) {
   if (!ObjectId.isValid(id)) throw new Error('Invalid id');
   const db = await getDb();

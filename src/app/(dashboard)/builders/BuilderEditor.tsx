@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/Toast';
 import Spinner from '@/components/ui/Spinner';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ImageUploader from '@/components/ImageUploader';
+import SeoFields from '@/components/SeoFields';
 import { IconTrash } from '@/components/icons';
 import type { BuilderRecord } from '@/lib/builders';
 
@@ -37,6 +38,8 @@ export default function BuilderEditor({
   const [locations, setLocations] = useState((builder?.locations ?? []).join(', '));
   const [website, setWebsite] = useState(builder?.website ?? '');
   const [active, setActive] = useState(builder?.active ?? true);
+  const [metaTitle, setMetaTitle] = useState(builder?.metaTitle ?? '');
+  const [metaDescription, setMetaDescription] = useState(builder?.metaDescription ?? '');
 
   const [busy, setBusy] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -65,6 +68,8 @@ export default function BuilderEditor({
           locations,
           website,
           active,
+          metaTitle,
+          metaDescription,
         }),
       });
       const data = await res.json();
@@ -225,6 +230,18 @@ export default function BuilderEditor({
                 />
               </div>
             </div>
+          </div>
+
+          <div className="px-5 pb-5 sm:px-6">
+            <SeoFields
+              title={metaTitle}
+              description={metaDescription}
+              onTitleChange={setMetaTitle}
+              onDescriptionChange={setMetaDescription}
+              disabled={!canWrite}
+              fallbackTitle={name ? `${name} — Projects in Bangalore` : undefined}
+              fallbackDescription={description}
+            />
           </div>
 
           <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-slate-200 bg-white/95 px-5 py-3.5 backdrop-blur sm:px-6">

@@ -218,6 +218,55 @@ export default function MicrositeForm({ id, microsite, details, builders, status
               className="input-area"
             />
           </div>
+
+          <div className="mt-4">
+            <label className="label" htmlFor="highlights">
+              Highlights
+            </label>
+            <textarea
+              id="highlights"
+              name="highlights"
+              rows={6}
+              defaultValue={d.highlights ?? ''}
+              disabled={!details}
+              className="input-area"
+              placeholder={'Clubhouse with 20+ amenities\n80% open space\nRERA approved\n5 minutes from the metro'}
+            />
+            <p className="field-hint">
+              One per line. Shown as the feature grid at the top of the project page; leave empty and
+              the grid is skipped.
+            </p>
+          </div>
+        </section>
+
+        <section className="divider pt-8">
+          <SectionHeading
+            title="Search engines"
+            description="Optional. Empty means the project page describes itself from the name, location and About text."
+          />
+          <div className="mt-4 space-y-4">
+            <Field
+              label="Meta title"
+              name="meta_title"
+              defaultValue={d.meta_title}
+              disabled={!details}
+              hint="Around 60 characters. Longer titles are cut off in search results."
+            />
+            <div>
+              <label className="label" htmlFor="meta_description">
+                Meta description
+              </label>
+              <textarea
+                id="meta_description"
+                name="meta_description"
+                rows={3}
+                defaultValue={d.meta_description ?? ''}
+                disabled={!details}
+                className="input-area"
+              />
+              <p className="field-hint">Around 155 characters — the two lines under the title.</p>
+            </div>
+          </div>
         </section>
       </div>
 

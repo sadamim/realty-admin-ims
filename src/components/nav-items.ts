@@ -6,8 +6,7 @@ import type { ReactElement } from 'react';
 import {
   IconBuilding,
   IconDashboard,
-  IconGallery,
-  IconHardHat,
+  IconSkyline,
   IconImage,
   IconInbox,
   IconNews,
@@ -15,7 +14,6 @@ import {
   IconQuote,
   IconSparkles,
   IconUsers,
-  IconUserSquare,
   type IconProps,
 } from '@/components/icons';
 import { can, type Permission } from '@/lib/permissions';
@@ -63,13 +61,6 @@ export const NAV_GROUPS: NavGroup[] = [
         permission: 'content.read',
       },
       {
-        href: '/media',
-        label: 'Media',
-        hint: 'Uploaded images',
-        icon: IconGallery,
-        permission: 'content.read',
-      },
-      {
         href: '/testimonials',
         label: 'Testimonials',
         hint: 'Client quotes on the homepage',
@@ -77,17 +68,10 @@ export const NAV_GROUPS: NavGroup[] = [
         permission: 'content.read',
       },
       {
-        href: '/team',
-        label: 'Team',
-        hint: 'People on the About page',
-        icon: IconUserSquare,
-        permission: 'content.read',
-      },
-      {
         href: '/builders',
         label: 'Builders',
         hint: 'Developers and project counts',
-        icon: IconHardHat,
+        icon: IconSkyline,
         permission: 'content.read',
       },
       {

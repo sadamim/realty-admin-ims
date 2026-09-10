@@ -410,3 +410,14 @@ export const IconGlobe = (p: IconProps) => (
     <path d="M3.5 12h17M12 3.5c2.2 2.4 3.3 5.3 3.3 8.5S14.2 18.1 12 20.5c-2.2-2.4-3.3-5.3-3.3-8.5S9.8 5.9 12 3.5Z" />
   </Svg>
 );
+
+/** Builders: a developer's skyline, rather than the construction hard hat. */
+export const IconSkyline = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 20.5h18" />
+    <path d="M5 20.5V9.5l4.5-2.6v13.6" />
+    <path d="M9.5 20.5V4.2l5.5 3v13.3" />
+    <path d="M15 20.5v-8.9l4 2.3v6.6" />
+    <path d="M7 12.4h.8M7 15.6h.8M11.6 9.4h.9M11.6 12.6h.9M11.6 15.8h.9" />
+  </Svg>
+);

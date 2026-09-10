@@ -24,37 +24,41 @@ export default {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       colors: {
+        // Sampled from the live site at realtyfocus.info: the logo wordmark and
+        // headings are rgb(9,5,69), the Submit button is rgb(192,15,27). The
+        // panel already references these tokens everywhere, so changing the
+        // values here re-brands the whole admin.
         navy: {
-          DEFAULT: "#1b2a41",
-          50: "#f4f6fa",
-          100: "#e7ecf3",
-          200: "#c9d4e4",
-          300: "#9fb1cb",
-          400: "#6c85a8",
-          500: "#476084",
-          600: "#2f4665",
-          700: "#243651",
-          800: "#1b2a41",
-          900: "#111c2c",
+          DEFAULT: "#090545",
+          50: "#f4f4fa",
+          100: "#e7e6f3",
+          200: "#c8c6e3",
+          300: "#a09cc9",
+          400: "#6f69a8",
+          500: "#4a4285",
+          600: "#332a68",
+          700: "#231a56",
+          800: "#150c4b",
+          900: "#090545",
         },
-        ink: "#0f1721",
+        ink: "#0b0729",
         brand: {
-          DEFAULT: "#c8102e",
+          DEFAULT: "#c00f1b",
           50: "#fef3f4",
-          100: "#fde4e7",
-          600: "#ad0d27",
-          700: "#8c0a1f",
+          100: "#fde3e5",
+          600: "#a50c17",
+          700: "#870a13",
         },
       },
       borderRadius: {
         card: "14px",
       },
       boxShadow: {
-        card: "0 1px 2px 0 rgb(15 23 33 / 0.04), 0 1px 3px 0 rgb(15 23 33 / 0.05)",
+        card: "0 1px 2px 0 rgb(9 5 69 / 0.04), 0 1px 3px 0 rgb(9 5 69 / 0.05)",
         "card-hover":
-          "0 6px 16px -6px rgb(15 23 33 / 0.12), 0 2px 6px -2px rgb(15 23 33 / 0.06)",
-        pop: "0 12px 32px -12px rgb(15 23 33 / 0.28), 0 2px 8px -3px rgb(15 23 33 / 0.12)",
-        rail: "1px 0 0 0 rgb(15 23 33 / 0.06)",
+          "0 6px 16px -6px rgb(9 5 69 / 0.12), 0 2px 6px -2px rgb(9 5 69 / 0.06)",
+        pop: "0 12px 32px -12px rgb(9 5 69 / 0.28), 0 2px 8px -3px rgb(9 5 69 / 0.12)",
+        rail: "1px 0 0 0 rgb(9 5 69 / 0.06)",
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.22, 1, 0.36, 1)",

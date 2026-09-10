@@ -1,15 +1,15 @@
 import Link from 'next/link';
 import { getCounts } from '@/lib/admin-data';
-import { getExtraCounts } from '@/lib/overview';
+import { getExtraCounts, getLeadsByMonth, getProjectsPerBuilder } from '@/lib/overview';
 import { getSessionUser } from '@/lib/auth';
 import PageHeader from '@/components/PageHeader';
 import CountUp from '@/components/ui/CountUp';
 import { visibleItems } from '@/components/nav-items';
+import { BuilderWorkload, EnquiriesTrend } from '@/components/Charts';
 import {
   IconBuilding,
   IconChevronRight,
-  IconGallery,
-  IconHardHat,
+  IconSkyline,
   IconImage,
   IconInbox,
   IconInfo,
@@ -19,7 +19,6 @@ import {
   IconRupee,
   IconSparkles,
   IconUsers,
-  IconUserSquare,
   type IconProps,
 } from '@/components/icons';
 
@@ -38,7 +37,13 @@ interface Tile {
 const ratio = (a: number, b: number) => (b > 0 ? (a / b).toFixed(1) : '0');
 
 export default async function DashboardPage() {
-  const [counts, extra, user] = await Promise.all([getCounts(), getExtraCounts(), getSessionUser()]);
+  const [counts, extra, user, leadsByMonth, builderWorkload] = await Promise.all([
+    getCounts(),
+    getExtraCounts(),
+    getSessionUser(),
+    getLeadsByMonth(),
+    getProjectsPerBuilder(),
+  ]);
 
   const primary: Tile[] = [
     {
@@ -76,7 +81,7 @@ export default async function DashboardPage() {
       value: counts.builders,
       note: `${ratio(counts.microsites, counts.builders)} projects per builder`,
       href: '/builders',
-      icon: IconHardHat,
+      icon: IconSkyline,
     },
   ];
 
@@ -90,28 +95,12 @@ export default async function DashboardPage() {
       icon: IconImage,
     },
     {
-      key: 'media',
-      label: 'Media',
-      value: extra.media,
-      note: 'Uploaded images',
-      href: '/media',
-      icon: IconGallery,
-    },
-    {
       key: 'testimonials',
       label: 'Testimonials',
       value: extra.testimonials,
       note: 'Client quotes',
       href: '/testimonials',
       icon: IconQuote,
-    },
-    {
-      key: 'team',
-      label: 'Team',
-      value: extra.team,
-      note: 'On the About page',
-      href: '/team',
-      icon: IconUserSquare,
     },
     { key: 'prices', label: 'Price rows', value: counts.prices, note: 'Configurations', icon: IconRupee },
     {
@@ -170,6 +159,26 @@ export default async function DashboardPage() {
         ))}
       </section>
 
+      <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <div className="card animate-fade-up p-5" style={{ animationDelay: '420ms' }}>
+          <h2 className="section-title">Enquiries per month</h2>
+          <p className="muted mt-0.5">
+            The last 12 months, from the <code className="code-chip">leads</code> collection.
+          </p>
+          <div className="mt-4">
+            <EnquiriesTrend data={leadsByMonth} />
+          </div>
+        </div>
+
+        <div className="card animate-fade-up p-5" style={{ animationDelay: '470ms' }}>
+          <h2 className="section-title">Busiest builders</h2>
+          <p className="muted mt-0.5">Projects linked to each developer.</p>
+          <div className="mt-4">
+            <BuilderWorkload data={builderWorkload} />
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
         <div className="card animate-fade-up p-5" style={{ animationDelay: '520ms' }}>
           <h2 className="section-title">Jump back in</h2>
@@ -223,7 +232,8 @@ export default async function DashboardPage() {
               <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-navy-300" />
               <span>
                 Uploaded images live in the <code className="code-chip">media</code> collection and are
-                served by both apps from <code className="code-chip">/api/media/…</code>.
+                served by both apps from <code className="code-chip">/api/media/…</code>, so nothing is
+                written to disk on Vercel.
               </span>
             </li>
           </ul>

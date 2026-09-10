@@ -14,8 +14,12 @@ export interface BannerRecord {
   _id: string;
   title: string;
   subtitle: string;
+  /** Desktop artwork. Required — the other two are optional refinements. */
   image: string | null;
   imageSrc: string | null;
+  /** Optional narrower crops. Empty means "reuse the desktop image". */
+  imageTablet: string | null;
+  imageMobile: string | null;
   ctaLabel: string;
   ctaHref: string;
   order: number;
@@ -27,6 +31,8 @@ export interface BannerInput {
   title?: string;
   subtitle?: string;
   image?: string | null;
+  imageTablet?: string | null;
+  imageMobile?: string | null;
   ctaLabel?: string;
   ctaHref?: string;
   order?: number;
@@ -41,6 +47,8 @@ function normalise(doc: Document): BannerRecord {
     subtitle: String(doc.subtitle ?? ''),
     image,
     imageSrc: resolveImageSrc(image, 'banner'),
+    imageTablet: String(doc.imageTablet ?? '').trim() || null,
+    imageMobile: String(doc.imageMobile ?? '').trim() || null,
     ctaLabel: String(doc.ctaLabel ?? ''),
     ctaHref: String(doc.ctaHref ?? ''),
     order: Number(doc.order ?? 0),
@@ -57,6 +65,10 @@ function buildSet(input: BannerInput) {
     title: String(input.title ?? '').trim(),
     subtitle: String(input.subtitle ?? '').trim(),
     image,
+    // Stored as '' rather than omitted, so clearing a crop actually clears it
+    // instead of leaving the previous value on the document.
+    imageTablet: String(input.imageTablet ?? '').trim(),
+    imageMobile: String(input.imageMobile ?? '').trim(),
     ctaLabel: String(input.ctaLabel ?? '').trim(),
     ctaHref: String(input.ctaHref ?? '').trim(),
     active: input.active !== false,

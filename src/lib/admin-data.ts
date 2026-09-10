@@ -278,6 +278,14 @@ const DETAIL_FIELDS = [
   'longitude',
   'built_area',
   'price',
+  // SEO overrides for /projects/[slug]. Legacy snake_case to match the rest of
+  // the imported detail row rather than mixing conventions on one document.
+  'meta_title',
+  'meta_description',
+  // Newline-separated selling points shown as a feature grid on the project
+  // page. Stored as text rather than an array to match the shape of every other
+  // list on this imported document (rooms, am_id).
+  'highlights',
 ];
 
 export async function updateMicrosite(id: string, payload: Record<string, unknown>) {

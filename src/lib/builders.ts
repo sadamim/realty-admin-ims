@@ -31,6 +31,8 @@ export interface BuilderRecord {
   website: string;
   active: boolean;
   projectCount: number;
+  metaTitle: string;
+  metaDescription: string;
 }
 
 const first = (...values: unknown[]) => {
@@ -52,8 +54,8 @@ export function normaliseBuilder(doc: Document, projectCount = 0): BuilderRecord
     name,
     slug: first(doc.slug) || slugify(name),
     logo,
-    // Imported logos are bare filenames under /images/logo/ on the old CDN.
-    logoSrc: resolveImageSrc(logo, 'logo'),
+    // Imported logos are bare filenames under /images/builder/ on the old CDN.
+    logoSrc: resolveImageSrc(logo, 'builder'),
     address: first(doc.address, doc.location),
     description: first(doc.description, doc.about, doc.builder_description),
     established: first(doc.established, doc.since, doc.established_year),
@@ -65,6 +67,8 @@ export function normaliseBuilder(doc: Document, projectCount = 0): BuilderRecord
     // explicit false hides one.
     active: doc.active !== false,
     projectCount,
+    metaTitle: first(doc.metaTitle),
+    metaDescription: first(doc.metaDescription),
   };
 }
 
@@ -80,6 +84,8 @@ export interface BuilderInput {
   locations?: string | string[];
   website?: string;
   active?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 function buildSet(input: BuilderInput) {
@@ -98,6 +104,8 @@ function buildSet(input: BuilderInput) {
     locations: listToCsv(input.locations),
     website: String(input.website ?? '').trim(),
     active: input.active !== false,
+    metaTitle: String(input.metaTitle ?? '').trim().slice(0, 70),
+    metaDescription: String(input.metaDescription ?? '').trim().slice(0, 160),
     updatedAt: new Date(),
   };
 }

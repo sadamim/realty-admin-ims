@@ -27,6 +27,9 @@ export interface BlogRecord {
   readTime: string;
   publishedAt: string | null;
   updatedAt: string | null;
+  /** SEO overrides. Empty means the title and excerpt describe the page. */
+  metaTitle: string;
+  metaDescription: string;
 }
 
 const first = (...values: unknown[]) => {
@@ -96,6 +99,8 @@ export function normaliseBlog(doc: Document): BlogRecord {
     readTime: first(doc.readTime) || readingTime(body),
     publishedAt: published ? published.toISOString() : null,
     updatedAt: toDate(doc.updatedAt)?.toISOString() ?? null,
+    metaTitle: first(doc.metaTitle),
+    metaDescription: first(doc.metaDescription),
   };
 }
 
@@ -109,6 +114,8 @@ export interface BlogInput {
   author?: string;
   status?: BlogStatus;
   publishedAt?: string | null;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 /** Only these keys are ever written. Unknown legacy columns are left alone. */
@@ -130,6 +137,8 @@ function buildSet(input: BlogInput) {
     status: input.status === 'draft' ? 'draft' : 'published',
     readTime: readingTime(body),
     publishedAt: published,
+    metaTitle: String(input.metaTitle ?? '').trim().slice(0, 70),
+    metaDescription: String(input.metaDescription ?? '').trim().slice(0, 160),
     updatedAt: new Date(),
   };
 }

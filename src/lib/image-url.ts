@@ -36,7 +36,6 @@ export type MediaFolder =
   | 'builder'
   | 'amenity'
   | 'testimonial'
-  | 'team'
   | 'general';
 
 export const MEDIA_FOLDERS: MediaFolder[] = [
@@ -46,21 +45,8 @@ export const MEDIA_FOLDERS: MediaFolder[] = [
   'builder',
   'amenity',
   'testimonial',
-  'team',
   'general',
 ];
-
-/** Human labels for the media filter chips. */
-export const MEDIA_FOLDER_LABELS: Record<MediaFolder, string> = {
-  blog: 'Blogs',
-  banner: 'Banners',
-  project: 'Projects',
-  builder: 'Builders',
-  amenity: 'Amenities',
-  testimonial: 'Testimonials',
-  team: 'Team',
-  general: 'General',
-};
 
 /**
  * Where a bare legacy filename lives on the old CDN, per section. Used when a
@@ -70,9 +56,8 @@ export const LEGACY_FOLDER_FOR: Record<MediaFolder, string> = {
   blog: 'blog',
   banner: 'banner',
   project: 'fimage',
-  builder: 'logo',
+  builder: 'builder',
   amenity: 'amenities',
   testimonial: 'testimonial',
-  team: 'team',
   general: 'fimage',
 };

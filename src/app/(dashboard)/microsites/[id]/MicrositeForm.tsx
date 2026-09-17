@@ -271,7 +271,7 @@ export default function MicrositeForm({ id, microsite, details, builders, status
       </div>
 
       {/* Sticky action bar */}
-      <div className="sticky bottom-0 flex items-center gap-3 border-t border-slate-200 bg-white/95 px-5 py-3.5 backdrop-blur sm:px-6">
+      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t border-slate-200 bg-white/95 px-5 py-3.5 backdrop-blur sm:px-6">
         <button type="submit" className="btn-primary" disabled={busy}>
           {busy && <Spinner className="h-4 w-4" />}
           {busy ? 'Saving…' : 'Save changes'}

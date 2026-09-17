@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import NavLink from '@/components/NavLink';
 import SignOutButton from '@/components/SignOutButton';
 import { visibleGroups } from '@/components/nav-items';
@@ -20,6 +21,39 @@ export default function Sidebar({
   onToggleCollapsed: () => void;
   onCloseMobile: () => void;
 }) {
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeRef = useRef(onCloseMobile);
+  closeRef.current = onCloseMobile;
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const panel = sidebarRef.current;
+    const focusable = () => Array.from(panel?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex="0"]',
+    ) ?? []).filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current();
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      previous?.focus();
+    };
+  }, [mobileOpen]);
+
   const initials = (user.username || user.email || '?').trim().slice(0, 2).toUpperCase();
 
   return (
@@ -34,13 +68,15 @@ export default function Sidebar({
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col border-r border-slate-200 bg-white
+        id="main-sidebar"
+        ref={sidebarRef}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] max-w-[calc(100vw-2rem)] flex-col border-r border-slate-200 bg-white
                     transition-[transform,width] duration-300 ease-smooth lg:translate-x-0
                     ${collapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'}
-                    ${mobileOpen ? 'translate-x-0 shadow-pop' : '-translate-x-full'}`}
+                    ${mobileOpen ? 'visible translate-x-0 shadow-pop' : 'invisible -translate-x-full lg:visible'}`}
       >
         {/* Brand */}
-        <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-4">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-4">
           <Link
             href="/"
             onClick={onCloseMobile}

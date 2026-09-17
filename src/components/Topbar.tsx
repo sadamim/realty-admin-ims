@@ -39,9 +39,11 @@ export default function Topbar({
   collapsed,
   onToggleCollapsed,
   onOpenMobile,
+  mobileOpen,
 }: {
   user: SessionUser;
   collapsed: boolean;
+  mobileOpen: boolean;
   onToggleCollapsed: () => void;
   onOpenMobile: () => void;
 }) {
@@ -79,7 +81,9 @@ export default function Topbar({
           type="button"
           onClick={onOpenMobile}
           aria-label="Open navigation"
-          className="btn-quiet btn-icon lg:hidden"
+          aria-expanded={mobileOpen}
+          aria-controls="main-sidebar"
+          className="btn-quiet btn-icon shrink-0 lg:hidden"
         >
           <IconMenu className="h-5 w-5" />
         </button>
@@ -102,12 +106,12 @@ export default function Topbar({
                   {crumb.href ? (
                     <Link
                       href={crumb.href}
-                      className="truncate text-slate-500 transition-colors hover:text-slate-900"
+                      className="block truncate text-slate-500 transition-colors hover:text-slate-900"
                     >
                       {crumb.label}
                     </Link>
                   ) : (
-                    <span className="truncate font-semibold text-slate-900">{crumb.label}</span>
+                    <span className="block truncate font-semibold text-slate-900">{crumb.label}</span>
                   )}
                 </li>
               </Fragment>
@@ -115,7 +119,7 @@ export default function Topbar({
           </ol>
         </nav>
 
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {/* Global search — goes straight to the projects list, which is where
               the searchable data lives. */}
           <form action="/microsites" method="get" className="relative hidden md:block">
@@ -151,7 +155,7 @@ export default function Topbar({
             </button>
 
             {menu === 'bell' && (
-              <div className="absolute right-0 top-full z-40 mt-2 w-[320px] origin-top-right animate-scale-in rounded-xl border border-slate-200 bg-white shadow-pop">
+              <div className="fixed inset-x-4 top-16 z-40 mt-2 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:w-[320px] origin-top-right animate-scale-in rounded-xl border border-slate-200 bg-white shadow-pop">
                 <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                   <p className="text-sm font-semibold text-slate-900">Activity</p>
                   {notifications.length > 0 && (
@@ -215,7 +219,7 @@ export default function Topbar({
             </button>
 
             {menu === 'user' && (
-              <div className="absolute right-0 top-full z-40 mt-2 w-64 origin-top-right animate-scale-in rounded-xl border border-slate-200 bg-white p-1.5 shadow-pop">
+              <div className="absolute right-0 top-full z-40 mt-2 w-64 max-w-[calc(100vw-2rem)] origin-top-right animate-scale-in rounded-xl border border-slate-200 bg-white p-1.5 shadow-pop">
                 <div className="px-3 py-2.5">
                   <p className="truncate text-sm font-semibold text-slate-900">
                     {user.username || user.email}

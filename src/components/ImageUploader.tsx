@@ -187,7 +187,7 @@ export default function ImageUploader({
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={previewSrc ?? ''} alt="" className="h-full w-full object-cover" />
-              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-ink/0 opacity-0 transition duration-200 ease-smooth hover:bg-ink/45 hover:opacity-100">
+              <div className="absolute inset-0 flex items-center justify-center gap-2 image-upload-actions bg-ink/0 opacity-0 transition duration-200 ease-smooth hover:bg-ink/45 hover:opacity-100 focus-within:bg-ink/45 focus-within:opacity-100">
                 <button
                   type="button"
                   className="btn-ghost btn-sm"

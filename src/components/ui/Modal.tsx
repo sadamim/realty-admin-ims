@@ -105,7 +105,7 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby="rf-modal-title"
         tabIndex={-1}
-        className={`relative w-full ${SIZES[size]} rounded-t-2xl bg-white shadow-pop outline-none
+        className={`relative break-words [overflow-wrap:anywhere] max-h-[100dvh] overflow-y-auto overscroll-contain sm:max-h-[calc(100dvh-3rem)] w-full ${SIZES[size]} rounded-t-2xl bg-white shadow-pop outline-none
                     transition duration-200 ease-smooth sm:rounded-2xl ${
                       visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-[0.98] opacity-0'
                     }`}

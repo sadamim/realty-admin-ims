@@ -44,6 +44,16 @@ export default function AppShell({
     };
   }, [mobileOpen]);
 
+  // A drawer opened on a phone must not keep desktop scrolling locked.
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setMobileOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
   const toggleCollapsed = useCallback(() => {
     setCollapsed((current) => {
       const next = !current;
@@ -67,18 +77,19 @@ export default function AppShell({
       />
 
       <div
-        className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-smooth ${
+        className={`flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 ease-smooth ${
           collapsed ? 'lg:pl-[76px]' : 'lg:pl-[260px]'
         }`}
       >
         <Topbar
           user={user}
           collapsed={collapsed}
+          mobileOpen={mobileOpen}
           onToggleCollapsed={toggleCollapsed}
           onOpenMobile={() => setMobileOpen(true)}
         />
 
-        <main className="flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
+        <main className="min-w-0 flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-[1400px]">
             <PageTransition>{children}</PageTransition>
           </div>

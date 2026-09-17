@@ -52,7 +52,7 @@
 @layer components {
   /* --- Surfaces ---------------------------------------------------------- */
   .card {
-    @apply rounded-card border border-slate-200/80 bg-white shadow-card;
+    @apply min-w-0 rounded-card border border-slate-200/80 bg-white shadow-card;
   }
   .card-interactive {
     @apply card transition duration-200 ease-smooth hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-card-hover;
@@ -69,7 +69,7 @@
     @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500;
   }
   .input {
-    @apply h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900
+    @apply h-10 min-w-0 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900
            shadow-[inset_0_1px_1px_rgb(15_23_33/0.03)] outline-none transition duration-200 ease-smooth
            placeholder:text-slate-400
            hover:border-slate-400
@@ -156,7 +156,7 @@
     @apply card overflow-hidden;
   }
   .table-scroll {
-    @apply w-full overflow-x-auto;
+    @apply min-w-0 max-w-full w-full overflow-x-auto overscroll-x-contain;
   }
   .th {
     @apply whitespace-nowrap bg-slate-50/80 px-4 py-3 text-left text-[11px] font-semibold uppercase
@@ -211,5 +211,27 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Keep native mobile inputs readable without triggering focus zoom. */
+@media (max-width: 639px) {
+  .input, .input-select, .input-area {
+    font-size: 16px;
+  }
+  .btn, .btn-primary, .btn-ghost, .btn-subtle, .btn-danger, .btn-quiet, .chip, .chip-active {
+    min-height: 44px;
+  }
+  .btn-icon {
+    min-width: 44px;
+    flex-shrink: 0;
+  }
+}
+
+/* Image controls must be discoverable on devices without hover. */
+@media (hover: none) {
+  .image-upload-actions {
+    opacity: 1;
+    background-color: rgb(15 23 33 / 0.35);
   }
 }

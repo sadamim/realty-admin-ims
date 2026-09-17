@@ -35,8 +35,8 @@ export default function Pagination({ page, totalPages, total, basePath, params =
   const nums = [];
   for (let i = start; i <= end; i++) nums.push(i);
 
-  const atStart = start === 1;
-  const atEnd = end === totalPages;
+  const atStart = page === 1;
+  const atEnd = page === totalPages;
 
   return (
     <nav
@@ -49,9 +49,10 @@ export default function Pagination({ page, totalPages, total, basePath, params =
         <span className="tabular-nums">{totalPages}</span>
       </p>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex max-w-full flex-wrap items-center gap-1.5">
         <Link
-          href={href(Math.max(1, start - GROUP))}
+          href={href(Math.max(1, page - 1))}
+          aria-label="Previous page"
           aria-disabled={atStart}
           tabIndex={atStart ? -1 : undefined}
           className={`btn-ghost btn-sm gap-1 ${atStart ? 'pointer-events-none opacity-40' : ''}`}
@@ -79,7 +80,8 @@ export default function Pagination({ page, totalPages, total, basePath, params =
         </div>
 
         <Link
-          href={href(Math.min(totalPages, start + GROUP))}
+          href={href(Math.min(totalPages, page + 1))}
+          aria-label="Next page"
           aria-disabled={atEnd}
           tabIndex={atEnd ? -1 : undefined}
           className={`btn-ghost btn-sm gap-1 ${atEnd ? 'pointer-events-none opacity-40' : ''}`}

@@ -67,7 +67,7 @@ export default function AppShell({
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen w-full min-w-0 overflow-x-clip bg-slate-50">
       <Sidebar
         user={user}
         collapsed={collapsed}
@@ -77,7 +77,7 @@ export default function AppShell({
       />
 
       <div
-        className={`flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 ease-smooth ${
+        className={`flex min-h-screen w-full min-w-0 flex-col transition-[padding] duration-300 ease-smooth ${
           collapsed ? 'lg:pl-[76px]' : 'lg:pl-[260px]'
         }`}
       >
@@ -89,7 +89,7 @@ export default function AppShell({
           onOpenMobile={() => setMobileOpen(true)}
         />
 
-        <main className="min-w-0 flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
+        <main className="w-full min-w-0 flex-1 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-[1400px]">
             <PageTransition>{children}</PageTransition>
           </div>

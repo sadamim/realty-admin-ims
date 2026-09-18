@@ -131,7 +131,7 @@ export default async function DashboardPage() {
   const shortcuts = visibleItems(user?.role).filter((item) => item.href !== '/');
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       <PageHeader
         eyebrow="Overview"
         title="Dashboard"
@@ -144,7 +144,7 @@ export default async function DashboardPage() {
         }
       />
 
-      <section aria-label="Key statistics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Key statistics" className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {primary.map((tile, index) => (
           <StatCard key={tile.key} tile={tile} index={index} />
         ))}
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="card animate-fade-up p-5" style={{ animationDelay: '420ms' }}>
           <h2 className="section-title">Enquiries per month</h2>
           <p className="muted mt-0.5">
@@ -179,7 +179,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+      <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <div className="card animate-fade-up p-5" style={{ animationDelay: '520ms' }}>
           <h2 className="section-title">Jump back in</h2>
           <p className="muted mt-1">Everything your role can reach.</p>
@@ -275,10 +275,10 @@ function StatCard({ tile, index, compact = false }: { tile: Tile; index: number;
   );
 
   return tile.href ? (
-    <Link href={tile.href} className="block h-full focus-visible:rounded-card">
+    <Link href={tile.href} className="block h-full min-w-0 break-words focus-visible:rounded-card">
       {body}
     </Link>
   ) : (
-    <div className="h-full">{body}</div>
+    <div className="h-full min-w-0 break-words">{body}</div>
   );
 }
